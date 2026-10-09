@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Math Test Center</title>
+<style>
+*{box-sizing:border-box} body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(135deg,#eaf2ff,#f8fbff);color:#172033}
+.app{max-width:900px;margin:0 auto;padding:24px}.card{background:white;border-radius:20px;padding:28px;box-shadow:0 10px 35px #0001;margin:20px 0}
+h1,h2{margin-top:0}.center{text-align:center}.hidden{display:none!important}
+input,select{width:100%;padding:14px;border:2px solid #d9e0eb;border-radius:10px;font-size:16px;margin:7px 0 14px}
+button{border:0;border-radius:10px;padding:12px 18px;font-size:16px;font-weight:700;cursor:pointer;background:#2563eb;color:white;margin:5px}
+button.secondary{background:#64748b}.danger{color:#b91c1c}.error{color:#b91c1c;font-weight:700}.success{color:#15803d;font-weight:700}
+.menu button{display:block;width:100%;margin:10px 0;padding:17px}.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;position:relative}
+.timer{font-size:22px;font-weight:800;background:#eef2ff;padding:8px 14px;border-radius:12px;color:#1e40af}.warning{background:#fee2e2;color:#b91c1c;animation:pulse 1s infinite}
+@keyframes pulse{50%{transform:scale(1.05)}}
+.progress{height:12px;background:#e5e7eb;border-radius:99px;overflow:hidden;margin:14px 0}.bar{height:100%;width:0;background:#2563eb;transition:.2s}
+.question{font-size:24px;font-weight:700;margin:25px 0}.hint{color:#64748b}
+.results{font-size:22px;line-height:1.6}.small{font-size:13px;color:#64748b}
+.badge{display:inline-block;padding:5px 9px;border-radius:99px;background:#dbeafe;color:#1d4ed8;font-weight:700;margin-right:6px}
+.role-badge{background:#fef3c7;color:#b45309}
+.action-group{display:flex;gap:10px;flex-wrap:wrap}
+.assigned-box{background:#eff6ff;border:2px dashed #3b82f6;border-radius:12px;padding:16px;margin:16px 0}
+
+/* Header & Dropdown Menu Styles */
+.header-actions{position:relative}
+.menu-btn{background:transparent;color:#172033;font-size:28px;padding:4px 10px;margin:0;border-radius:8px;line-height:1}
+.menu-btn:hover{background:#e2e8f0}
+.dropdown-menu{position:absolute;right:0;top:45px;background:white;border:1px solid #cbd5e1;box-shadow:0 10px 25px #0002;border-radius:12px;width:240px;padding:12px;z-index:100}
+.dropdown-menu p{margin:0 0 8px;padding:6px 8px;font-size:14px;color:#475569;border-bottom:1px solid #f1f5f9;word-break:break-all}
+.dropdown-menu button{display:block;width:100%;margin:4px 0;text-align:left;font-size:14px;padding:10px;border-radius:8px}
+</style>
+</head>
+<body>
+<div class="app">
+
+<section id="auth" class="card">
+  <div class="center">
+    <h1>📚 Math Test Center</h1>
+    <p>Create an account or sign in to keep your scores.</p>
+  </div>
+  <div id="authForms">
+    <h2 id="authTitle">Create Account</h2>
+    <div id="roleWrap">
+      <label for="role">Account Type</label>
+      <select id="role">
+        <option value="student">Student</option>
+        <option value="teacher">Teacher</option>
+      </select>
+    </div>
+    <label>Email</label><input id="email" type="email" placeholder="you@example.com">
+    <label>Password</label>
+    <div style="position:relative">
+      <input id="password" type="password" placeholder="Choose your own password" style="padding-right:50px">
+      <button type="button" class="secondary" id="togglePassword" aria-label="Show password" style="position:absolute;right:5px;top:5px;margin:0;padding:8px 10px">👁️</button>
+    </div>
+    <div id="confirmWrap"><label>Confirm Password</label>
+      <div style="position:relative">
+        <input id="confirmPassword" type="password" placeholder="Type your password again" style="padding-right:50px">
+        <button type="button" class="secondary" id="toggleConfirm" aria-label="Show confirmation password" style="position:absolute;right:5px;top:5px;margin:0;padding:8px 10px">👁️</button>
+      </div>
+    </div>
+    <button id="authBtn">Create Account</button>
+    <button class="secondary" id="switchAuth">I already have an account</button>
+    <p id="authMsg"></p>
+    <p class="small">Demo account storage uses this browser's local storage. Do not use a real password.</p>
+  </div>
+</section>
+
+<section id="home" class="card hidden">
+  <div class="topbar">
+    <div><h1>Welcome! 👋</h1><p id="who"></p></div>
+    <div class="header-actions">
+      <button class="menu-btn" id="menuToggle" aria-label="Open menu">☰</button>
+      <div class="dropdown-menu hidden" id="dropdownMenu">
+        <p id="menuAccountEmail"></p>
+        <button class="secondary" id="switchRoleBtn"></button>
+        <button class="danger" id="logout">Log Out</button>
+      </div>
+    </div>
+  </div>
+  
+  <div id="assignedContainer" class="assigned-box hidden">
+    <h3 style="margin-top:0">📌 Assigned Test Waiting</h3>
+    <p id="assignedNotice"></p>
+    <button id="startAssigned">Start Assigned Test 🔒</button>
+  </div>
+
+  <h2>Choose any grade or math level</h2>
+  <p>From early counting through college math. Every test has 30 regular questions, 2 bonus questions, and a 2-minute timer per question.</p>
+  <label for="levelSelect">Grade or level</label>
+  <select id="levelSelect">
+    <optgroup label="Early Math"><option>Pre-K Math</option><option>Kindergarten Math</option><option>1st Grade Math</option><option>2nd Grade Math</option><option>3rd Grade Math</option><option>4th Grade Math</option><option>5th Grade Math</option></optgroup>
+    <optgroup label="Middle School"><option>6th Grade Math</option><option>7th Grade Math</option><option>8th Grade Math</option><option>Arithmetic</option><option>Pre-Algebra</option></optgroup>
+    <optgroup label="High School"><option>Algebra I</option><option>Geometry</option><option>Algebra II</option><option>Trigonometry</option><option>Precalculus</option><option>9th Grade Math</option><option>10th Grade Math</option><option>11th Grade Math</option><option>12th Grade Math</option></optgroup>
+    <optgroup label="College & Advanced Math"><option>Calculus I</option><option>Statistics</option><option>Linear Algebra</option></optgroup>
+  </select>
+  <div class="action-group">
+    <button id="startSelected">Take Practice Test →</button>
+    <button id="assignTest" class="secondary hidden">Assign Test to Student 📝</button>
+  </div>
+  <div id="history"></div>
+</section>
+
+<section id="test" class="card hidden">
+  <div class="topbar">
+    <div><span class="badge" id="testName"></span><div class="small" id="qCount"></div></div>
+    <div class="timer" id="timer">⏱️ 2:00</div>
+  </div>
+  <div class="progress"><div class="bar" id="bar"></div></div>
+  <div id="question"></div>
+  <input id="answer" autocomplete="off" placeholder="Type your answer here">
+  <p class="hint" id="hintText"></p>
+  <button id="next">Next Question →</button>
+  <button class="secondary" id="quit">Quit Test</button>
+</section>
+
+<section id="results" class="card hidden">
+  <div class="center"><h1>🎉 Test Complete!</h1></div>
+  <div class="results" id="resultText"></div>
+  <button onclick="goHome()">Back to Test Center</button>
+</section>
+
+</div>
+
+<script>
+const LEVELS = ["Pre-K Math","Kindergarten Math","1st Grade Math","2nd Grade Math","3rd Grade Math","4th Grade Math","5th Grade Math","6th Grade Math","7th Grade Math","8th Grade Math","Arithmetic","Pre-Algebra","Algebra I","Geometry","Algebra II","Trigonometry","Precalculus","9th Grade Math","10th Grade Math","11th Grade Math","12th Grade Math","Calculus I","Statistics","Linear Algebra"];
+const q=(text,answer)=>[text,String(answer)];
+function makeQuestions(level){
+ const out=[];
+ const add=(text,ans)=>out.push(q(text,ans));
+ const n=i=>i+1;
+ for(let i=0;i<32;i++){
+  const a=2+(i*3)%17, b=1+(i*5)%12, c=2+(i*2)%9;
+  if(level==="Pre-K Math"){
+   const k=i%8;
+   if(k===0)add(`Count these: ${'● '.repeat(1+i%5).trim()}. How many?`,1+i%5);
+   if(k===1)add(`What number comes after ${i%9}?`,i%9+1);
+   if(k===2)add(`Which is bigger: ${a%6+1} or ${b%6+1}?`,Math.max(a%6+1,b%6+1));
+   if(k===3)add(`What is ${i%4+1} + ${i%3+1}?`,i%4+1+i%3+1);
+   if(k===4)add(`What is ${i%5+2} − 1?`,i%5+1);
+   if(k===5)add(`How many sides does a triangle have?`,3);
+   if(k===6)add(`What number comes before ${i%8+2}?`,i%8+1);
+   if(k===7)add(`How many corners does a square have?`,4);
+  } else if(level==="Kindergarten Math" || level==="1st Grade Math"){
+   const k=i%8;
+   if(k===0)add(`What is ${a} + ${b}?`,a+b);
+   if(k===1)add(`What is ${a+b} − ${b}?`,a);
+   if(k===2)add(`What number comes after ${20+i}?`,21+i);
+   if(k===3)add(`What is ${i%5+1} more than ${10+i}?`,11+i+i%5);
+   if(k===4)add(`How many sides does a hexagon have?`,6);
+   if(k===5)add(`Which is greater: ${a} or ${b}?`,Math.max(a,b));
+   if(k===6)add(`What is ${i%10} + 10?`,i%10+10);
+   if(k===7)add(`There are ${a} apples and ${b} more. How many apples?`,a+b);
+  } else if(level==="2nd Grade Math"){
+   const k=i%8;
+   if(k===0)add(`What is ${20+a} + ${10+b}?`,30+a+b);
+   if(k===1)add(`What is ${50+a} − ${b}?`,50+a-b);
+   if(k===2)add(`What is ${i%5+2} × 2?`,(i%5+2)*2);
+   if(k===3)add(`How many minutes are in ${i%3+1} hours?`,(i%3+1)*60);
+   if(k===4)add(`What is the value of the 5 in ${500+(i%10)*7}?`,500);
+   if(k===5)add(`What is ${a} + ${a}?`,2*a);
+   if(k===6)add(`A toy costs $${i%8+2}. You pay $${i%8+5}. How much change?`,3);
+   if(k===7)add(`How many sides do 2 triangles have altogether?`,6);
+  } else if(level==="3rd Grade Math" || level==="4th Grade Math" || level==="5th Grade Math"){
+   const k=i%10;
+   if(k===0)add(`What is ${a} × ${b}?`,a*b);
+   if(k===1)add(`What is ${(a*b)} ÷ ${a}?`,b);
+   if(k===2)add(`What is ${100+a*11} + ${b*17}?`,100+a*11+b*17);
+   if(k===3)add(`What is ${a*10} − ${b*3}?`,a*10-b*3);
+   if(k===4)add(`What is the area of a rectangle ${a} cm by ${b} cm?`,a*b);
+   if(k===5)add(`What is the perimeter of a square with side ${a}?`,4*a);
+   if(k===6)add(`What is ${i%8+1}/ ${i%8+1} as a simplified fraction?`,`1`);
+   if(k===7)add(`What is ${a}/10 as a decimal?`,`${(a/10).toFixed(1)}`);
+   if(k===8)add(`What is ${a*a}?`,a*a);
+   if(k===9)add(`Round ${1234+i*37} to the nearest hundred.`,Math.round((1234+i*37)/100)*100);
+  } else if(["6th Grade Math","7th Grade Math","8th Grade Math","Arithmetic","Pre-Algebra"].includes(level)){
+   const k=i%10;
+   if(k===0)add(`Evaluate: ${a} + (${b} × ${c})`,a+b*c);
+   if(k===1)add(`Solve for x: x + ${a} = ${a+b}`,b);
+   if(k===2)add(`Solve for x: ${a}x = ${a*b}`,b);
+   if(k===3)add(`What is ${a}/${a+b} + ${b}/${a+b} as a simplified fraction?`,`1`);
+   if(k===4)add(`What is ${a*10}% of ${b*10}?`,a*b);
+   if(k===5)add(`Simplify: ${a}x + ${b}x. Give the coefficient.`,a+b);
+   if(k===6)add(`What is ${a}²?`,a*a);
+   if(k===7)add(`What is the absolute value of −${a}?`,a);
+   if(k===8)add(`A ratio is ${a}:${a*2}. What is the second number when the first is 1?`,2);
+   if(k===9)add(`What is the mean of ${a}, ${a+2}, and ${a+4}?`,a+2);
+  } else if(level==="Geometry" || ["9th Grade Math","10th Grade Math"].includes(level)){
+   const k=i%10;
+   if(k===0)add(`A triangle has angles ${30+i%4*5}° and ${60+i%3*5}°. Find the third angle.`,180-(30+i%4*5)-(60+i%3*5));
+   if(k===1)add(`Find the area of a circle with radius ${i%5+1}. Use π and give the coefficient of π.`,(i%5+1)**2);
+   if(k===2)add(`Find the hypotenuse of a right triangle with legs ${3*(i%3+1)} and ${4*(i%3+1)}.`,5*(i%3+1));
+   if(k===3)add(`Find the area of a triangle with base ${a*2} and height ${b}.`,a*b);
+   if(k===4)add(`Find the volume of a cube with side ${c}.`,c**3);
+   if(k===5)add(`A rectangle is ${a} by ${b}. Find its perimeter.`,2*(a+b));
+   if(k===6)add(`Two supplementary angles: one is ${70+i%4*10}°. Find the other.`,180-(70+i%4*10));
+   if(k===7)add(`How many degrees are in the interior angle sum of a ${i%4+3}-sided polygon?`,((i%4+3)-2)*180);
+   if(k===8)add(`Find the distance between (0,0) and (${3*(i%3+1)},${4*(i%3+1)}).`,5*(i%3+1));
+   if(k===9)add(`A circle has diameter ${2*c}. What is its circumference in terms of π? Give the coefficient.`,2*c);
+  } else if(level==="Algebra I" || level==="Algebra II"){
+   const k=i%10;
+   if(k===0)add(`Solve: ${a}x + ${b} = ${a*c+b}.`,c);
+   if(k===1)add(`Solve: ${a}(x − ${b}) = ${a*c}.`,c+b);
+   if(k===2)add(`Factor: x² − ${a*a}. What is the positive solution to x² − ${a*a}=0?`,a);
+   if(k===3)add(`Evaluate f(x) = ${a}x + ${b} when x = ${c}.`,a*c+b);
+   if(k===4)add(`Solve: x² = ${a*a}. Give the positive solution.`,a);
+   if(k===5)add(`Simplify the coefficient: ${a}x² + ${b}x².`,a+b);
+   if(k===6)add(`Solve: ${a}x − ${b} = ${a*c-b}.`,c);
+   if(k===7)add(`What is the slope of y = ${a}x + ${b}?`,a);
+   if(k===8)add(`Expand: ${a}(x + ${b}). What is the constant term?`,a*b);
+   if(k===9)add(`Solve: 2x + ${a} = ${a+2*c}.`,c);
+  } else if(level==="Trigonometry"){
+   const vals=[["sin(0°)","0"],["cos(0°)","1"],["sin(30°)","1/2"],["cos(60°)","1/2"],["sin(90°)","1"],["cos(90°)","0"],["tan(45°)","1"],["sin(180°)","0"],["cos(180°)","-1"],["How many radians are in 180°?","π"]];
+   add(...vals[i%vals.length]);
+  } else if(level==="Precalculus" || level==="11th Grade Math" || level==="12th Grade Math"){
+   const k=i%10;
+   if(k===0)add(`What is f(${c}) if f(x) = x² + ${b}?`,c*c+b);
+   if(k===1)add(`What is the common difference of ${2+i}, ${5+i}, ${8+i}, ${11+i}, ...?`,3);
+   if(k===2)add(`Simplify: 2^${i%5+1}.`,2**(i%5+1));
+   if(k===3)add(`What is the vertex x-coordinate of y = (x − ${c})² + ${b}?`,c);
+   if(k===4)add(`If log₁₀(1000) = x, what is x?`,3);
+   if(k===5)add(`What is the sum of the first ${c} positive integers?`,c*(c+1)/2);
+   if(k===6)add(`Solve: 3x = ${3*a}.`,a);
+   if(k===7)add(`What is the absolute value of ${-a}?`,a);
+   if(k===8)add(`What is the slope between (0,${b}) and (2,${b+6})?`,3);
+   if(k===9)add(`What is the discriminant of x² − ${a*a} = 0?`,4*a*a);
+  } else if(level==="Calculus I"){
+   const k=i%10;
+   if(k===0)add(`Derivative of f(x) = x^${i%4+2}. Give the exponent on x in the derivative.`,i%4+1);
+   if(k===1)add(`Derivative of f(x) = ${a}x.`,a);
+   if(k===2)add(`Derivative of f(x) = ${a}.`,0);
+   if(k===3)add(`Evaluate ∫ ${a} dx from 0 to 1.`,a);
+   if(k===4)add(`What is the limit of x + ${b} as x approaches ${c}?`,c+b);
+   if(k===5)add(`Derivative of f(x) = x² at x = ${c}.`,2*c);
+   if(k===6)add(`Evaluate ∫ 1 dx from 0 to ${c}.`,c);
+   if(k===7)add(`What is the slope of y = ${a}x² at x = 1?`,2*a);
+   if(k===8)add(`Derivative of f(x) = x³. Give the coefficient of x².`,3);
+   if(k===9)add(`Evaluate the limit of (x²) as x approaches ${c}.`,c*c);
+  } else if(level==="Statistics"){
+   const arr=[a,b,c,a+2,b+1]; const sorted=[...arr].sort((x,y)=>x-y);
+   const k=i%8;
+   if(k===0)add(`Find the mean of ${arr.join(", ")}.`,arr.reduce((x,y)=>x+y,0)/arr.length);
+   if(k===1)add(`Find the median of ${arr.join(", ")}.`,sorted[2]);
+   if(k===2)add(`A fair die is rolled. What is the probability of rolling a 6? Answer as a fraction.`,`1/6`);
+   if(k===3)add(`A bag has ${a} red and ${b} blue balls. How many balls total?`,a+b);
+   if(k===4)add(`A value increases from ${a*10} to ${a*10+b*10}. What is the increase?`,b*10);
+   if(k===5)add(`What is the range of ${arr.join(", ")}?`,Math.max(...arr)-Math.min(...arr));
+   if(k===6)add(`A coin is flipped once. Probability of heads as a percent?`,50);
+   if(k===7)add(`If 3 of 12 students choose art, what percentage is that?`,25);
+  } else if(level==="Linear Algebra"){
+   const k=i%8;
+   if(k===0)add(`Dot product of (${a}, ${b}) and (1, 2).`,a+2*b);
+   if(k===1)add(`Determinant of [[${a}, 0], [0, ${b}]].`,a*b);
+   if(k===2)add(`Magnitude squared of vector (${a}, ${b}).`,a*a+b*b);
+   if(k===3)add(`Solve x + y = ${a+b}, x − y = ${a-b}. Find x.`,a);
+   if(k===4)add(`What is the trace of [[${a}, 2], [3, ${b}]]?`,a+b);
+   if(k===5)add(`Multiply vector (${a}, ${b}) by scalar 2. Give first component.`,2*a);
+   if(k===6)add(`Determinant of [[1, ${a}], [0, 1]].`,1);
+   if(k===7)add(`If A is a 2×2 identity matrix, what is its determinant?`,1);
+  } else {
+   const k=i%8;
+   if(k===0)add(`What is ${a} + ${b}?`,a+b);
+   if(k===1)add(`What is ${a*b} ÷ ${a}?`,b);
+   if(k===2)add(`Solve for x: x + ${a} = ${a+b}.`,b);
+   if(k===3)add(`What is ${a}²?`,a*a);
+   if(k===4)add(`What is ${a} × ${b}?`,a*b);
+   if(k===5)add(`What is ${a+b} − ${b}?`,a);
+   if(k===6)add(`What is the mean of ${a}, ${b}, and ${c}?`,(a+b+c)/3);
+   if(k===7)add(`What is the perimeter of a square with side ${a}?`,4*a);
+  }
+ }
+ const bonusByLevel={
+  "Pre-K Math":[q("BONUS: What number comes after 9?",10),q("BONUS: How many sides does a square have?",4)],
+  "Kindergarten Math":[q("BONUS: What is 8 + 7?",15),q("BONUS: What is 10 − 4?",6)],
+  "1st Grade Math":[q("BONUS: What is 9 + 8?",17),q("BONUS: What is 20 − 7?",13)],
+  "2nd Grade Math":[q("BONUS: What is 12 × 3?",36),q("BONUS: How many minutes are in 2 hours?",120)],
+  "3rd Grade Math":[q("BONUS: What is 12 × 12?",144),q("BONUS: What is 144 ÷ 12?",12)],
+  "4th Grade Math":[q("BONUS: What is 3/4 + 1/4?",1),q("BONUS: What is 15²?",225)],
+  "5th Grade Math":[q("BONUS: What is 15% of 200?",30),q("BONUS: A rectangle has area 48 and width 6. Find its length.",8)],
+  "Geometry":[q("BONUS: A rectangle has area 48 and width 6. Find its length.",8),q("BONUS: What is the sum of a triangle's interior angles?",180)],
+  "Trigonometry":[q("BONUS: What is cos(60°)?", "1/2"),q("BONUS: How many radians are in 180°?","π")],
+  "Calculus I":[q("BONUS: Derivative of x⁴: give the coefficient of x³.",4),q("BONUS: Evaluate ∫ 2 dx from 0 to 3.",6)],
+  "Statistics":[q("BONUS: A fair coin is flipped twice. How many equally likely outcomes?",4),q("BONUS: Find the median of 2, 7, 9.",7)],
+  "Linear Algebra":[q("BONUS: Determinant of [[2,0],[0,3]].",6),q("BONUS: Dot product of (1,2) and (3,4).",11)]
+ };
+ return out.slice(0,30).concat(bonusByLevel[level] || [q("BONUS: What is 15% of 200?",30),q("BONUS: A rectangle has area 48 and width 6. Find its length.",8)]);
+}
+let activeQuestions=[];
+
+let currentUser=null, mode="signup", currentTest=null, index=0, answers=[], correct=0, bonusCorrect=0, timeLeft=120, timerId=null, isAssignedAttempt=false;
+
+const $=id=>document.getElementById(id);
+function show(id){["auth","home","test","results"].forEach(x=>$(x).classList.toggle("hidden",x!==id));}
+function getUsers(){return JSON.parse(localStorage.getItem("mathUsers")||"{}")}
+function saveUsers(u){localStorage.setItem("mathUsers",JSON.stringify(u))}
+function key(v){return String(v).trim().toLowerCase().replace(/°/g,"").replace(/π/g,"pi").replace(/[−–]/g,"-").replace(/\s+/g,"")}
+function same(a,b){
+  a=key(a); b=key(b);
+  if(a===b)return true;
+  const nums=s=>s.replace(/,/g,"").replace(/\s/g,"");
+  if(nums(a)===nums(b))return true;
+  const map={"one":"1","two":"2","three":"3","four":"4","five":"5","six":"6","seven":"7","eight":"8","nine":"9","ten":"10"};
+  return map[a]===b || map[b]===a;
+}
+function hashDemo(s){
+  let h=2166136261;
+  for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}
+  return String(h>>>0);
+}
+function oldHashDemo(s){let h=0;for(let i=0;i<s.length;i++)h=((h<<5)-h)+s.charCodeAt(i)|0;return String(h)}
+
+function toggleField(id,btnId){
+ const input=$(id), btn=$(btnId);
+ const visible=input.type==="text";
+ input.type=visible?"password":"text";
+ btn.textContent=visible?"👁️":"🙈";
+ btn.setAttribute("aria-label",visible?"Show password":"Hide password");
+}
+$("togglePassword").onclick=()=>toggleField("password","togglePassword");
+$("toggleConfirm").onclick=()=>toggleField("confirmPassword","toggleConfirm");
+
+$("authBtn").onclick=()=>{
+ const email=$("email").value.trim().toLowerCase(), pass=$("password").value;
+ const confirm=$("confirmPassword").value;
+ const role=$("role").value;
+ $("authMsg").className="error";
+ if(!email||!email.includes("@")){$("authMsg").textContent="Enter a valid email address.";return}
+ if(pass.length<4){$("authMsg").textContent="Your password must be at least 4 characters.";return}
+ if(mode==="signup" && pass!==confirm){$("authMsg").textContent="The passwords do not match.";return}
+ const users=getUsers();
+ if(mode==="signup"){
+   if(users[email]){$("authMsg").textContent="That account already exists.";return}
+   users[email]={password:pass,role:role,scores:[],assignedTest:null};saveUsers(users);currentUser=email;showHome();
+ }else{
+   if(!users[email]){$("authMsg").textContent="No account found for that email. Choose Create Account to register.";return}
+   const saved=users[email].password;
+   if(saved!==pass && saved!==hashDemo(pass) && saved!==oldHashDemo(pass)){$("authMsg").textContent="Password is incorrect. Check the email and password, or create a new account with a different email.";return}
+   if(saved!==pass){users[email].password=pass;saveUsers(users)}
+   currentUser=email;showHome();
+ }
+};
+$("switchAuth").onclick=()=>{
+ mode=mode==="signup"?"login":"signup";
+ $("authTitle").textContent=mode==="signup"?"Create Account":"Sign In";
+ $("authBtn").textContent=mode==="signup"?"Create Account":"Sign In";
+ $("switchAuth").textContent=mode==="signup"?"I already have an account":"Create a new account";
+ $("confirmWrap").classList.toggle("hidden", mode!=="signup");
+ $("roleWrap").classList.toggle("hidden", mode!=="signup");
+ $("confirmPassword").value="";
+ $("authMsg").textContent="";
+};
+$("logout").onclick=()=>{
+ currentUser=null;
+ $("dropdownMenu").classList.add("hidden");
+ show("auth");
+};
+
+// Hamburger Menu Logic
+$("menuToggle").onclick=(e)=>{
+ e.stopPropagation();
+ $("dropdownMenu").classList.toggle("hidden");
+};
+document.addEventListener("click",(e)=>{
+ if(!$("dropdownMenu").contains(e.target) && e.target!==$("menuToggle")){
+  $("dropdownMenu").classList.add("hidden");
+ }
+});
+
+$("switchRoleBtn").onclick=()=>{
+ const users=getUsers();
+ const user=users[currentUser];
+ if(!user)return;
+
+ // Prompt for monitor password if switching to a Teacher account
+ if(user.role==='student'){
+  const monitorPass=prompt("Switching to Teacher Account.\nPlease enter the monitor password:");
+  if(monitorPass!=="admin"){
+   alert("Incorrect monitor password. Switch cancelled.");
+   return;
+  }
+ }
+
+ user.role=user.role==='teacher'?'student':'teacher';
+ saveUsers(users);
+ $("dropdownMenu").classList.add("hidden");
+ showHome();
+};
+
+function showHome(){
+ const user=getUsers()[currentUser]||{role:'student',scores:[],assignedTest:null};
+ const roleTitle=user.role==='teacher'?'🍎 Teacher':'🎓 Student';
+ $("who").innerHTML=`Signed in as <b>${currentUser}</b> <span class="badge role-badge">${roleTitle}</span>`;
+ $("menuAccountEmail").innerHTML=`Account:<br><b>${currentUser}</b>`;
+ $("switchRoleBtn").textContent=user.role==='teacher'?'Switch to Student Account':'Switch to Teacher Account';
+ 
+ $("assignTest").classList.toggle("hidden", user.role!=='teacher');
+ 
+ if(user.assignedTest && user.role==='student'){
+  $("assignedNotice").innerHTML=`Your teacher assigned you <b>${user.assignedTest}</b>. You will need to enter the monitor password to begin.`;
+  $("assignedContainer").classList.remove("hidden");
+ } else {
+  $("assignedContainer").classList.add("hidden");
+ }
+
+ const s=user.scores||[];
+ $("history").innerHTML=s.length?("<h3>Previous Scores</h3>"+s.slice(-6).reverse().map(x=>`<p>${x.test}: <b>${x.percent}%</b> — ${x.date}</p>`).join("")):"<p>No scores yet.</p>";
+ show("home");
+}
+
+function startTest(type){
+ currentTest=type; activeQuestions=makeQuestions(type); index=0; answers=[]; correct=0; bonusCorrect=0;
+ $("testName").textContent="🧮 "+type;
+ show("test"); render();
+}
+
+function assignTestToStudent(){
+ const selectedLevel=$("levelSelect").value;
+ const studentEmail=prompt(`Enter the student's email address to assign "${selectedLevel}":`);
+ if(!studentEmail){return;}
+ const emailClean=studentEmail.trim().toLowerCase();
+ const users=getUsers();
+ if(!users[emailClean]){
+  alert(`No account found for "${emailClean}". Make sure the student creates an account first.`);
+  return;
+ }
+ users[emailClean].assignedTest=selectedLevel;
+ saveUsers(users);
+ alert(`Successfully assigned "${selectedLevel}" to ${emailClean}!`);
+}
+
+function startAssignedTest(){
+ const users=getUsers();
+ const user=users[currentUser];
+ if(!user || !user.assignedTest){return;}
+ 
+ const monitorPass=prompt(`Starting assigned test "${user.assignedTest}".\nPlease enter the monitor password:`);
+ if(monitorPass!=="admin"){
+  alert("Incorrect password. Access denied.");
+  return;
+ }
+ 
+ const testToStart=user.assignedTest;
+ user.assignedTest=null; // Clear assignment once started
+ saveUsers(users);
+ isAssignedAttempt=true;
+ startTest(testToStart);
+}
+
+function startSelectedTest(){
+ isAssignedAttempt=false;
+ startTest($("levelSelect").value);
+}
+
+$("startSelected").onclick=startSelectedTest;
+$("assignTest").onclick=assignTestToStudent;
+$("startAssigned").onclick=startAssignedTest;
+
+function questions(){return activeQuestions.slice(0,30)}
+function bonusesForCurrent(){return activeQuestions.slice(30,32)}
+
+function startQuestionTimer(){
+ clearInterval(timerId);
+ timeLeft=120; // 2 minutes per question
+ updateTimerDisplay();
+ timerId=setInterval(tick,1000);
+}
+
+function updateTimerDisplay(){
+ const mins=Math.floor(timeLeft/60);
+ const secs=String(timeLeft%60).padStart(2,"0");
+ $("timer").textContent=`⏱️ ${mins}:${secs}`;
+ $("timer").classList.toggle("warning", timeLeft<=20);
+}
+
+function tick(){
+ timeLeft--;
+ updateTimerDisplay();
+ if(timeLeft<=0){
+  $("next").click();
+ }
+}
+
+function render(){
+ startQuestionTimer();
+ const all=[...questions(),...bonusesForCurrent()], q=all[index];
+ $("qCount").textContent=`Question ${index+1} of 32${index>=30?" • BONUS":""}`;
+ $("bar").style.width=((index)/32*100)+"%";
+ $("question").innerHTML=`<div class="question">${q[0]}</div>`;
+ $("answer").value=answers[index]||"";
+ const userPass=getUsers()[currentUser]?.password || "N/A";
+ $("hintText").innerHTML=`💡 Hint: Your account password is <b>${userPass}</b>`;
+ $("answer").focus();
+}
+
+$("next").onclick=()=>{
+ answers[index]=$("answer").value;
+ if(index<31){
+  index++;
+  render();
+ } else {
+  finishTest();
+ }
+};
+$("answer").addEventListener("keydown",e=>{if(e.key==="Enter")$("next").click()});
+$("quit").onclick=()=>{if(confirm("Quit this test? Your current attempt will not be scored.")){clearInterval(timerId);showHome()}};
+
+function finishTest(){
+ clearInterval(timerId);
+ const all=[...questions(),...bonusesForCurrent()];
+ correct=0;bonusCorrect=0;
+ for(let i=0;i<30;i++)if(same(answers[i]||"",all[i][1]))correct++;
+ for(let i=30;i<32;i++)if(same(answers[i]||"",all[i][1]))bonusCorrect++;
+ let percent=Math.round((correct/30)*100+bonusCorrect*5);
+ const label=percent>100?`${percent}% (bonus!)`:`${percent}%`;
+ const users=getUsers(), u=users[currentUser];
+ u.scores=u.scores||[];u.scores.push({test:currentTest,percent:label,date:new Date().toLocaleString()});
+ users[currentUser]=u;saveUsers(users);
+ $("resultText").innerHTML=`
+   <p><b>Regular score:</b> ${correct}/30</p>
+   <p><b>Bonus score:</b> ${bonusCorrect}/2</p>
+   <p><b>Final grade:</b> ${label}</p>
+   <p class="small">Regular questions are graded out of 100%. Each correct bonus adds 5 percentage points, up to 110%.</p>`;
+ show("results");
+}
+function goHome(){showHome()}
+$("authTitle").textContent="Create Account";
+$("authBtn").textContent="Create Account";
+$("switchAuth").textContent="I already have an account";
+$("confirmWrap").classList.remove("hidden");
+show("auth");
+</script>
+</body>
+</html>
